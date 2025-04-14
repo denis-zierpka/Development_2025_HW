@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-archiver
+spec:
+  successfulJobsHistoryLimit: 0
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: archiver
+            image: alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              timestamp=$(date +%Y%m%d%H%M%S)
+              if [ ! -d "/app/logs" ]; then
+                echo "Directory /app/logs not found"
+                exit 1
+              fi
+              tar -czf /tmp/app-logs-${timestamp}.tar.gz app/logs/
+              echo "Archive created: /tmp/app-logs-${timestamp}.tar.gz"
+              sleep 660
+            volumeMounts:
+            - name: logs-volume
+              mountPath: /app/logs
+          volumes:
+          - name: logs-volume
+            hostPath:
+              path: /var/log/app
+              type: Directory
+          restartPolicy: OnFailure

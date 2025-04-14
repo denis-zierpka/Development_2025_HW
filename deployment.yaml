@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: hw-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hw-app
+  template:
+    metadata:
+      labels:
+        app: hw-app
+    spec:
+      containers:
+      - name: app
+        image: deniszierpka/hw-development-app:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: app-config
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: logs-volume
+        hostPath:
+          path: /var/log/app
+          type: DirectoryOrCreate
+        # emptyDir: {} # can be used for steps 1-4 instead of hostPath

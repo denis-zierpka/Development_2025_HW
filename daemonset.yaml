@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+spec:
+  selector:
+    matchLabels:
+      app: log-agent
+  template:
+    metadata:
+      labels:
+        app: log-agent
+    spec:
+      containers:
+      - name: log-agent
+        image: alpine:latest
+        command: ["sh", "-c", "tail -F /logs/app.log"]
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /logs
+      volumes:
+      - name: logs-volume
+        hostPath:
+          path: /var/log/app
+          type: DirectoryOrCreate
